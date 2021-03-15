@@ -8,8 +8,9 @@
   "main": "index.js",
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1", 
-    "start": "nodemon index"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "NODE_ENV=staging nodemon index",
+    "production": "NODE_ENV=production nodemon index"
   },
   "keywords": [],
   "author": "",

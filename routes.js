@@ -1,7 +1,11 @@
-const { sampleHandler } = require('./handlers/routeHandler/sampleHandler')
+const { sampleHandler } = require('./handlers/routeHandler/sampleHandler');
+const { tokenHandler } = require('./handlers/routeHandler/tokenHandler');
+const { userHandler } = require('./handlers/routeHandler/userHandler');
 
 const routes = {
-  'sample': sampleHandler
-}
+  sample: sampleHandler,
+  user: userHandler,
+  token: tokenHandler
+};
 
-module.exports = routes
+module.exports = routes;

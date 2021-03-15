@@ -3,6 +3,7 @@ const url = require('url');
 const { StringDecoder } = require('string_decoder');
 const routes = require('../routes');
 const { notFoundHandler } = require('../handlers/routeHandler/notFoundHandler');
+const { parseJSON } = require('./utilities');
 
 // module scaffolding
 const handler = {};
@@ -15,8 +16,7 @@ handler.handleReqRes = (req, res) => {
   const queryString = parsedUrl.query;
   const reqHeaders = req.headers;
 
-  const queryProperties = {
-    parsedUrl,
+  const queryProperties = { 
     path,
     trimmedPath,
     method,
@@ -25,28 +25,31 @@ handler.handleReqRes = (req, res) => {
   };
 
   const decoder = new StringDecoder('utf-8');
-
   let realData = '';
 
   const chosenHandler = routes[trimmedPath]
     ? routes[trimmedPath]
     : notFoundHandler;
-  
-  chosenHandler(queryProperties, (statusCode, payload) => {
-    statusCode = typeof statusCode === 'number' ? statusCode : 500;
-    payload = typeof payload === 'object' ? payload : {};
-    const stringPayload = JSON.stringify(payload);
-    res.writeHead(statusCode);
-    res.write(stringPayload);
-  });
 
   req.on('data', (buffer) => {
     realData += decoder.write(buffer);
   });
 
   req.on('end', () => {
-    console.log('see realData ', realData);
-    res.end();
+    queryProperties.body = parseJSON(realData);
+
+    chosenHandler(queryProperties, (statusCode, payload) => {
+      statusCode = typeof statusCode === 'number' ? statusCode : 500;
+      payload =
+        typeof payload === 'object'
+          ? payload
+          : { somethingError: 'Please check your application' };
+      const stringPayload = JSON.stringify(payload);
+      // res.setHeader('Content-Type', 'application/json');
+      res.writeHead(statusCode);
+      res.write(stringPayload);
+      res.end();
+    });
   });
 };
 
