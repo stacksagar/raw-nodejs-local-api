@@ -1,4 +1,3 @@
-const { last } = require('lodash');
 const { hash } = require('../../helpers/utilities');
 const data = require('../../lib/data');
 const app = {};

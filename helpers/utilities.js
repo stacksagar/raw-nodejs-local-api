@@ -25,4 +25,16 @@ app.hash = (getString) => {
   }
 };
 
+app.randomStringData = (getLength) => {
+  const length = getLength;
+  const acceptedChars = 'abcdefghijklmnopqrstuvwxyz0123456789#*';
+  let output = '';
+  if (length > 0) {
+    for (let i = 0; i < length; i++) {
+      output += acceptedChars.charAt(Math.floor(Math.random() * length + 1));
+    }
+    return output
+  }
+};
+
 module.exports = app;
