@@ -4,11 +4,13 @@ app.staging = {
   port: 3000,
   message: 'Staging server running...',
   secretKey: 'staging-encpw',
+  maxChecks: 5
 };
 app.production = {
   port: 5000,
   message: 'Production server running...',
   secretKey: 'production-encpw',
+  maxChecks: 5
 };
 
 const currentEnvironment =
