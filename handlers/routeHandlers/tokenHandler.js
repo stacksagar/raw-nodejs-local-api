@@ -148,4 +148,21 @@ app.tokens.delete = (reqProperties, callback) => {
   }
 };
 
+app.tokens.verify = (token, phone, callback) => {
+  data.read('tokens', token, (err, getData) => {
+    if (!err && getData) {
+      if (
+        parseJSON(getData).phone === phone &&
+        parseJSON(getData).expires > Date.now()
+      ) {
+        callback(true);
+      } else {
+        callback(false);
+      }
+    } else {
+      callback(false);
+    }
+  });
+};
+
 module.exports = app;

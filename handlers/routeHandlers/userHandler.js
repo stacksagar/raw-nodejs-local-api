@@ -1,5 +1,7 @@
 const { hash } = require('../../helpers/utilities');
 const data = require('../../lib/data');
+const tokenHandler = require('./tokenHandler');
+
 const app = {};
 
 app.userHandler = (reqProperties, callback) => {
@@ -21,13 +23,25 @@ app._users.get = (reqProperties, callback) => {
       : false;
 
   if (phone) {
-    data.read('users', phone, (err, getData) => {
-      if (!err) {
-        const newData = { ...JSON.parse(getData) };
-        delete newData.password;
-        callback(200, getData);
+    // verify Token
+    const token =
+      typeof reqProperties.reqHeaders.token === 'string'
+        ? reqProperties.reqHeaders.token
+        : false;
+
+    tokenHandler.tokens.verify(token, phone, (tokenID) => {
+      if (tokenID) {
+        data.read('users', phone, (err, getData) => {
+          if (!err) {
+            const newData = { ...JSON.parse(getData) };
+            delete newData.password;
+            callback(200, getData);
+          } else {
+            callback(404, { error: 'Not found! \n please try again!' });
+          }
+        });
       } else {
-        callback(404, { error: 'Not found! \n please try again!' });
+        callback(403, { error: 'Authencation failure!' });
       }
     });
   } else {
@@ -92,7 +106,7 @@ app._users.post = (reqProperties, callback) => {
       }
     });
   } else {
-    callback(500, {error:'you have a problem in your request'})
+    callback(500, { error: 'you have a problem in your request' });
   }
 };
 
@@ -122,24 +136,35 @@ app._users.put = (reqProperties, callback) => {
       : false;
 
   if (firstName || lastName || phone || password) {
-    data.read('users', phone, (err, getData) => {
-      if (!err) {
-        const newData = { ...JSON.parse(getData) };
+    // verify Token
+    const token =
+      typeof reqProperties.reqHeaders.token === 'string'
+        ? reqProperties.reqHeaders.token
+        : false;
+    tokenHandler.tokens.verify(token, phone, (tokenID) => {
+      if (tokenID) {
+        data.read('users', phone, (err, getData) => {
+          if (!err) {
+            const newData = { ...JSON.parse(getData) };
 
-        firstName && (newData.firstName = firstName);
-        lastName && (newData.lastName = lastName);
-        password && (newData.password = hash(password));
+            firstName && (newData.firstName = firstName);
+            lastName && (newData.lastName = lastName);
+            password && (newData.password = hash(password));
 
-        data.update('users', phone, newData, (err2) => {
-          if (!err2) {
-            callback(200, { message: 'user successfully updated!' });
+            data.update('users', phone, newData, (err2) => {
+              if (!err2) {
+                callback(200, { message: 'user successfully updated!' });
+              } else {
+                callback(500, { error: 'user updated failed!' });
+                console.log('err2 ', err2);
+              }
+            });
           } else {
-            callback(500, { error: 'user updated failed!' });
-            console.log('err2 ', err2)
+            callback(404, { error: 'Not Found!' });
           }
         });
       } else {
-        callback(404, { error: 'Not Found!' });
+        callback(403, { error: 'Authencation failure!' });
       }
     });
   } else {
@@ -155,21 +180,32 @@ app._users.delete = (reqProperties, callback) => {
       : false;
 
   if (phone) {
-    data.read('users', phone, (err, getData) => {
-      if (!err && getData) {
-        data.delete('users', phone, (err2) => {
-          if (!err2) {
-            callback(200, { message: 'file successfully deleted!' });
+    // verify Token
+    const token =
+      typeof reqProperties.reqHeaders.token === 'string'
+        ? reqProperties.reqHeaders.token
+        : false;
+    tokenHandler.tokens.verify(token, phone, (tokenID) => {
+      if (tokenID) {
+        data.read('users', phone, (err, getData) => {
+          if (!err && getData) {
+            data.delete('users', phone, (err2) => {
+              if (!err2) {
+                callback(200, { message: 'file successfully deleted!' });
+              } else {
+                callback(500, { error: 'failed to delete!' });
+              }
+            });
           } else {
-            callback(500, { error: 'failed to delete!' });
+            callback(404, { error: 'Not Found!' });
           }
         });
       } else {
-        callback(404, { error: 'Not Found!' });
+        callback(403, { error: 'Authencation failure!' });
       }
     });
   } else {
-    console.log(phone)
+    console.log(phone);
     callback(404, { error: 'you have a problem in your request!' });
   }
 };

@@ -39,7 +39,7 @@ app.ReqResHandler = (req, res) => {
       res.writeHead(getStatusCode);
       const stringData =
         typeof payload === 'object' ? JSON.stringify(payload) : payload;
-      res.write(stringData);
+      res.write(stringData  );
       res.end();
     });
   });
